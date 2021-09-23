@@ -11,16 +11,16 @@ namespace AdventOfCode.Days
 {
     public class Day07 : BaseDay
     {
-        private readonly int[] input;
+        private readonly string input;
         public Day07()
         {
-            input = File.ReadAllLines(InputFilePath)[0].Split(",").Select(x => int.Parse(x)).ToArray();
+            input = File.ReadAllLines(InputFilePath)[0];
         }
 
         public override string Solve_1()
         {
-            var processor = new IntcodeProcessor(input.ToArray());
-            int max = 0;
+            var processor = new IntcodeProcessor(input);
+            long max = 0;
 
             foreach (var perm in Enumerables.Permutations(new int[] { 0, 1, 2, 3, 4 }))
             {
@@ -60,12 +60,12 @@ namespace AdventOfCode.Days
 
         public override string Solve_2()
         {
-            int max = 0;
+            long max = 0;
 
             foreach (var perm in Enumerables.Permutations(new int[] { 5, 6, 7, 8, 9 }))
             {
                 var proccesors = Enumerable.Range(0, 5).Select(x => new IntcodeProcessor(input, perm[x])).ToList();
-                var signals = new int[] { 0, 0, 0, 0, 0 };
+                var signals = new long[] { 0, 0, 0, 0, 0 };
 
                 bool running = true;
                 while (running)

@@ -11,24 +11,25 @@ namespace AdventOfCode.Days
 {
     public class Day09 : BaseDay
     {
-        private readonly long[] input;
+        private readonly string input;
         public Day09()
         {
-            input = File.ReadAllLines(InputFilePath)[0].Split(",").Select(x => long.Parse(x)).ToArray();
+            input = File.ReadAllLines(InputFilePath)[0];
         }
 
         //1102 too low
         public override string Solve_1()
         {
-            //var processor = new IntcodeProcessor(input);
-            //processor.RunProgram();
-            //return processor.Output.ToString();
-            throw new NotImplementedException();
+            var processor = new IntcodeProcessor(input, 1);
+            processor.RunProgram();
+            return processor.Output.ToString();
         }
 
         public override string Solve_2()
         {
-            throw new NotImplementedException();
+            var processor = new IntcodeProcessor(input, 2);
+            processor.RunProgram();
+            return processor.Output.ToString();
         }
     }
 }

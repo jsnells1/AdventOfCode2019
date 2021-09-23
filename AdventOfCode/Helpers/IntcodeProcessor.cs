@@ -15,29 +15,28 @@ namespace AdventOfCode.Helpers
             Relative = 2
         }
 
-        private int[] _initialProgram;
-        private List<int> program;
+        private List<long> _initialProgram;
+        private List<long> program;
         private int pointer = 0;
 
         private int relativeBase = 0;
 
-        private readonly Queue<int> inputs = new();
+        private readonly Queue<long> inputs = new();
 
-        public int Output { get; set; } = 0;
-        public int ValueAtZero => program[0];
+        public long Output { get; set; } = 0;
+        public long ValueAtZero => program[0];
 
         #region Constructors
 
-        public IntcodeProcessor(int[] program)
+        public IntcodeProcessor(string program)
         {
-            // Copy intiial array for reuse 
-            _initialProgram = program.ToArray();
-            this.program = program.ToList();
+            this.program = program.Split(",").Select(x => long.Parse(x)).ToList();
+            Enumerable.Range(0, 10000).ToList().ForEach(x => this.program.Add(0));
 
-            Enumerable.Range(0, 1000).ToList().ForEach(x => this.program.Add(0));
+            _initialProgram = this.program.ToList();
         }
 
-        public IntcodeProcessor(int[] program, params int[] inputs) : this(program)
+        public IntcodeProcessor(string program, params long[] inputs) : this(program)
         {
             AddInput(inputs);
         }
@@ -64,14 +63,14 @@ namespace AdventOfCode.Helpers
             pointer = 0;
             while (true)
             {
-                int instruction = program[pointer] % 100;
+                long instruction = program[pointer] % 100;
 
                 if (instruction == 99)
                 {
                     return;
                 }
 
-                int paramModes = program[pointer] / 100;
+                long paramModes = program[pointer] / 100;
 
                 RunInstruction(instruction, paramModes);
             }
@@ -81,14 +80,14 @@ namespace AdventOfCode.Helpers
         {
             while (true)
             {
-                int instruction = program[pointer] % 100;
+                long instruction = program[pointer] % 100;
 
                 if (instruction == 99)
                 {
                     return true;
                 }
 
-                int paramModes = program[pointer] / 100;
+                long paramModes = program[pointer] / 100;
 
                 RunInstruction(instruction, paramModes);
 
@@ -99,7 +98,7 @@ namespace AdventOfCode.Helpers
             }
         }
 
-        private void RunInstruction(int instruction, int paramModes)
+        private void RunInstruction(long instruction, long paramModes)
         {
             switch (instruction)
             {
@@ -147,7 +146,7 @@ namespace AdventOfCode.Helpers
 
         #region Managing Input
 
-        public void AddInput(params int[] inputs)
+        public void AddInput(params long[] inputs)
         {
             foreach (var input in inputs)
             {
@@ -159,42 +158,43 @@ namespace AdventOfCode.Helpers
 
         #region Instructions
 
-        private void RunSum(int modes)
+        private void RunSum(long modes)
         {
-            int param1 = GetParam(pointer + 1, modes % 10);
+            var param1 = GetParam(pointer + 1, modes % 10);
             modes /= 10;
-            int param2 = GetParam(pointer + 2, modes % 10);
-            int param3 = program[pointer + 3];
+            var param2 = GetParam(pointer + 2, modes % 10);
+            modes /= 10;
+            var param3 = GetOutParam(pointer + 3, modes % 10);
 
             program[param3] = param1 + param2;
         }
 
-        private void RunMulti(int modes)
+        private void RunMulti(long modes)
         {
-            int param1 = GetParam(pointer + 1, modes % 10);
+            var param1 = GetParam(pointer + 1, modes % 10);
             modes /= 10;
-            int param2 = GetParam(pointer + 2, modes % 10);
-            int param3 = program[pointer + 3];
+            var param2 = GetParam(pointer + 2, modes % 10);
+            modes /= 10;
+            var param3 = GetOutParam(pointer + 3, modes % 10);
 
             program[param3] = param1 * param2;
         }
 
-        private void RunInput(int modes)
+        private void RunInput(long modes)
         {
-            program[program[pointer + 1]] = inputs.Dequeue();
+            program[GetOutParam(pointer + 1, modes % 10)] = inputs.Dequeue();
         }
 
-        private void RunOutput(int modes)
+        private void RunOutput(long modes)
         {
-            //Output = program[program[pointer + 1]];
             Output = GetParam(pointer + 1, modes);
         }
 
-        private void RunJump(int modes, bool isTrue)
+        private void RunJump(long modes, bool isTrue)
         {
-            int param1 = GetParam(pointer + 1, modes % 10);
+            var param1 = GetParam(pointer + 1, modes % 10);
             modes /= 10;
-            int param2 = GetParam(pointer + 2, modes % 10);
+            var param2 = (int)GetParam(pointer + 2, modes % 10);
 
             if (isTrue)
             {
@@ -208,53 +208,63 @@ namespace AdventOfCode.Helpers
             }
         }
 
-        private void RunLessThan(int modes)
+        private void RunLessThan(long modes)
         {
-            int param1 = GetParam(pointer + 1, modes % 10);
+            var param1 = GetParam(pointer + 1, modes % 10);
             modes /= 10;
-            int param2 = GetParam(pointer + 2, modes % 10);
-            int param3 = program[pointer + 3];
+            var param2 = GetParam(pointer + 2, modes % 10);
+            modes /= 10;
+            var param3 = GetOutParam(pointer + 3, modes % 10);
 
             program[param3] = param1 < param2 ? 1 : 0;
         }
 
-        private void RunEquals(int modes)
+        private void RunEquals(long modes)
         {
-            int param1 = GetParam(pointer + 1, modes % 10);
+            var param1 = GetParam(pointer + 1, modes % 10);
             modes /= 10;
-            int param2 = GetParam(pointer + 2, modes % 10);
-            int param3 = program[pointer + 3];
+            var param2 = GetParam(pointer + 2, modes % 10);
+            modes /= 10;
+            var param3 = GetOutParam(pointer + 3, modes % 10);
 
             program[param3] = param1 == param2 ? 1 : 0;
         }
 
-        private void RunAdjustBase(int modes)
+        private void RunAdjustBase(long modes)
         {
-            int param1 = GetParam(pointer + 1, modes % 10);
-            relativeBase += param1;
+            var param1 = GetParam(pointer + 1, modes % 10);
+            relativeBase += (int)param1;
         }
 
         #endregion
 
-        private int GetParam(int location, int mode)
+        private long GetParam(int location, long mode)
         {
             return GetParam(location, (ParamMode)mode);
         }
 
-        private int GetParam(int location, ParamMode mode)
+        // TODO: Figure this the fuck out
+        private int GetOutParam(int location, long mode)
         {
-            switch (mode)
+            if (mode == 2)
             {
-                case ParamMode.Position:
-                    return program[program[location]];
-                case ParamMode.Immediate:
-                    return program[location];
-                case ParamMode.Relative:
-                    return program[program[location] + relativeBase];
 
-                default:
-                    throw new NotImplementedException();
+                return (int)program[location] + relativeBase;
             }
+            else
+            {
+                return (int)program[location];
+            }
+        }
+        private long GetParam(int location, ParamMode mode)
+        {
+            return mode switch
+            {
+                ParamMode.Position => program[(int)program[location]],
+                ParamMode.Immediate => program[location],
+                ParamMode.Relative => program[(int)program[location] + relativeBase],
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 }
