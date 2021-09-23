@@ -246,12 +246,7 @@ namespace AdventOfCode.Helpers
 
         private int GetParam(int location, long mode)
         {
-            return GetParam(location, (ParamMode)mode);
-        }
-
-        private int GetParam(int location, ParamMode mode)
-        {
-            return mode switch
+            return (ParamMode)mode switch
             {
                 ParamMode.Position => (int)program[location],
                 ParamMode.Immediate => location,
