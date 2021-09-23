@@ -160,41 +160,37 @@ namespace AdventOfCode.Helpers
 
         private void RunSum(long modes)
         {
-            var param1 = GetParam(pointer + 1, modes % 10);
-            modes /= 10;
-            var param2 = GetParam(pointer + 2, modes % 10);
-            modes /= 10;
-            var param3 = GetOutParam(pointer + 3, modes % 10);
+            var parameters = GetParams(3, modes);
+            var param1 = program[parameters[0]];
+            var param2 = program[parameters[1]];
 
-            program[param3] = param1 + param2;
+            program[parameters[2]] = param1 + param2;
         }
 
         private void RunMulti(long modes)
         {
-            var param1 = GetParam(pointer + 1, modes % 10);
-            modes /= 10;
-            var param2 = GetParam(pointer + 2, modes % 10);
-            modes /= 10;
-            var param3 = GetOutParam(pointer + 3, modes % 10);
+            var parameters = GetParams(3, modes);
+            var param1 = program[parameters[0]];
+            var param2 = program[parameters[1]];
 
-            program[param3] = param1 * param2;
+            program[parameters[2]] = param1 * param2;
         }
 
         private void RunInput(long modes)
         {
-            program[GetOutParam(pointer + 1, modes % 10)] = inputs.Dequeue();
+            program[GetParam(pointer + 1, modes)] = inputs.Dequeue();
         }
 
         private void RunOutput(long modes)
         {
-            Output = GetParam(pointer + 1, modes);
+            Output = program[GetParam(pointer + 1, modes)];
         }
 
         private void RunJump(long modes, bool isTrue)
         {
-            var param1 = GetParam(pointer + 1, modes % 10);
-            modes /= 10;
-            var param2 = (int)GetParam(pointer + 2, modes % 10);
+            var parameters = GetParams(2, modes);
+            var param1 = program[parameters[0]];
+            var param2 = (int)program[parameters[1]];
 
             if (isTrue)
             {
@@ -210,61 +206,60 @@ namespace AdventOfCode.Helpers
 
         private void RunLessThan(long modes)
         {
-            var param1 = GetParam(pointer + 1, modes % 10);
-            modes /= 10;
-            var param2 = GetParam(pointer + 2, modes % 10);
-            modes /= 10;
-            var param3 = GetOutParam(pointer + 3, modes % 10);
+            var parameters = GetParams(3, modes);
+            var param1 = program[parameters[0]];
+            var param2 = program[parameters[1]];
 
-            program[param3] = param1 < param2 ? 1 : 0;
+            program[parameters[2]] = param1 < param2 ? 1 : 0;
         }
 
         private void RunEquals(long modes)
         {
-            var param1 = GetParam(pointer + 1, modes % 10);
-            modes /= 10;
-            var param2 = GetParam(pointer + 2, modes % 10);
-            modes /= 10;
-            var param3 = GetOutParam(pointer + 3, modes % 10);
+            var parameters = GetParams(3, modes);
+            var param1 = program[parameters[0]];
+            var param2 = program[parameters[1]];
 
-            program[param3] = param1 == param2 ? 1 : 0;
+            program[parameters[2]] = param1 == param2 ? 1 : 0;
         }
 
         private void RunAdjustBase(long modes)
         {
-            var param1 = GetParam(pointer + 1, modes % 10);
-            relativeBase += (int)param1;
+            relativeBase += (int)program[GetParam(pointer + 1, modes % 10)];
         }
 
         #endregion
 
-        private long GetParam(int location, long mode)
+        #region Getting Parameters
+
+        private List<int> GetParams(int length, long modes)
+        {
+            List<int> parameters = new();
+
+            for (int i = 0; i < length; i++)
+            {
+                parameters.Add(GetParam(pointer + i + 1, modes % 10));
+                modes /= 10;
+            }
+
+            return parameters;
+        }
+
+        private int GetParam(int location, long mode)
         {
             return GetParam(location, (ParamMode)mode);
         }
 
-        // TODO: Figure this the fuck out
-        private int GetOutParam(int location, long mode)
-        {
-            if (mode == 2)
-            {
-
-                return (int)program[location] + relativeBase;
-            }
-            else
-            {
-                return (int)program[location];
-            }
-        }
-        private long GetParam(int location, ParamMode mode)
+        private int GetParam(int location, ParamMode mode)
         {
             return mode switch
             {
-                ParamMode.Position => program[(int)program[location]],
-                ParamMode.Immediate => program[location],
-                ParamMode.Relative => program[(int)program[location] + relativeBase],
+                ParamMode.Position => (int)program[location],
+                ParamMode.Immediate => location,
+                ParamMode.Relative => (int)program[location] + relativeBase,
                 _ => throw new NotImplementedException(),
             };
         }
+
+        #endregion
     }
 }
