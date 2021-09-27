@@ -4,8 +4,6 @@ using System.Linq;
 
 namespace AdventOfCode.Helpers
 {
-
-
     class IntcodeProcessor
     {
         private enum ParamMode
@@ -21,7 +19,7 @@ namespace AdventOfCode.Helpers
 
         private int relativeBase = 0;
 
-        private readonly Queue<long> inputs = new();
+        public readonly Queue<long> inputs = new();
 
         public long Output { get; set; } = 0;
         public long ValueAtZero => program[0];
@@ -152,6 +150,11 @@ namespace AdventOfCode.Helpers
             {
                 this.inputs.Enqueue(input);
             }
+        }
+
+        public void AlterMemory(int position, long value)
+        {
+            program[position] = value;
         }
 
         #endregion
