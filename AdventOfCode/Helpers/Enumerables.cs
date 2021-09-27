@@ -8,11 +8,11 @@ namespace AdventOfCode.Helpers
 {
     static class Enumerables
     {
-        public static IEnumerable<int[]> Permutations(int[] values)
+        public static IEnumerable<T[]> Permutations<T>(T[] values)
         {
             // Credit: https://github.com/encse/adventofcode/blob/6eb936b4fd55cda4acb7540abaa915c1a67a4b7a/2019/Day07/Solution.cs#L45
 
-            IEnumerable<int[]> PermutationsRec(int i)
+            IEnumerable<T[]> PermutationsRec(int i)
             {
                 if (i == values.Length)
                 {
